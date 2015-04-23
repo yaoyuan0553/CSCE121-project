@@ -1,4 +1,5 @@
 
+
 #include "Point.h"
 #include "Graph.h"
 #include "PancakeStack.h"
@@ -7,17 +8,31 @@
 
 namespace Graph_lib
 {
+	bool PancakeStack::is_sorted()
+	{
+		vector<int> temp(s.begin(),s.begin()+n);		//temporary vector to store shuffled nums
+		vector<int> orig = temp;				// original part of sizes, up to n numbers of it
+		sort(temp.begin(),temp.end());			// sort and reverse temp
+		reverse(temp.begin(),temp.end());		// reverse because a "perfect" stack is from the greatest to smallest
+		if (orig == temp)
+			return true;
+		return false;
+	}
+
 	void PancakeStack::get_size()
 	{
-		vector<int> nums(1,10);
+		s.clear();		//clear sizes to ensure it's empty everytime it's called
+		vector<int> nums;
 		for (int i = 1; i <= 9; ++i)
 			nums.push_back(i);
 		//make the random number different every time rand() is called
 		random_shuffle(nums.begin(), nums.end());
 		for (int i = 0; i < nums.size(); ++i)
 		{
-			s.push_back(nums[i]);
+			s.push_back(nums[i]);				//s is sizes
 		}
+		if (is_sorted())
+			get_size();
 	}
 
 	void PancakeStack::stack_pancake()

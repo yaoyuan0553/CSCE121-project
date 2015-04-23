@@ -1,4 +1,5 @@
 
+
 #include "Game_screen.h"
 
 using namespace Graph_lib;
@@ -13,18 +14,22 @@ Game_screen::Game_screen(Point xy, int w, int h, const string& title):
 	difficulty_out(Point(x_max()/2-100,y_max()*2/5),100,50, "Difficulty level:"),
 	level_menu1(Point(50,y_max()*3/5),150,20,Menu::horizontal,"Difficulty Levels"),
 	level_menu2(Point(50,y_max()*3/5+20),150,20,Menu::horizontal, "Difficulty Levels"),
-	difficulty_level(PancakeStack::Difficulty::medium)		//default difficulty level
+	steps(0),
+	score(0),
+	win(false),
+	lose(false),
+	difficulty_level(PancakeStack::Difficulty::medium),		//default difficulty level
+	congrats_text(Point(x_max()/5, y_max()/5),"Congratualations, You Win!"),
+	score_text(Point(x_max()/5+30,y_max()/5+30), "Your score: "+ to_string(score)),
+	background(Point(0,0),"pancakepro-pan.jpg")
 {
 	pcks.set_difficulty(difficulty_level);
 	attach(pcks);
-	get_buttons();
 	attach(quit_button);
 	attach(go_button);
 	attach(name_box);
 	attach(difficulty_out);
 	attach_levels();		//create and attach level_menu1/2 's buttons
-	for (int i = 0; i < pcks.total_pancakes(); ++i)
-		attach(*pancake_buttons[i]);
 	game_hide();		// show ready screen contents first
 }
 
@@ -98,14 +103,16 @@ void Game_screen::set_difficulty(PancakeStack::Difficulty d)
 	stringstream ss;
 	ss << d;
 	difficulty_out.put(ss.str());
+	get_buttons();			// buttons can only be set after difficulty is set, since difficulty decides the size of buttons
 }
 	
 void Game_screen::button_pressed(int i)
 // actions when pancake flip buttons are pressed
 {
 	pcks.flip(i);
-	for (int j = 0; j < pcks.total_pancakes(); ++j) 
 	//re-position and adjust the widths/heights of all buttons
+	// so that they will still fit underneath different pancakes
+	for (int j = 0; j < pcks.total_pancakes(); ++j) 
 	{
 		detach(*pancake_buttons[j]);
 		pancake_buttons[j]->loc = Point(x_max()/2-pcks.sizes()[j]*25,y_max()-87-21*j);
@@ -114,6 +121,29 @@ void Game_screen::button_pressed(int i)
 		attach(*pancake_buttons[j]);
 	}
 	redraw();
+	++steps;		//step plus one
+	win_check();	//check for win every time buttons are pressed
+}
+
+void Game_screen::win_check()
+{
+	vector<int> original;	//store the original sizes() vector
+	vector<int> sorted;		//store sizes in another vector avoiding direct changes to sizes()
+	for (int i = 0; i < pcks.total_pancakes(); ++i)
+		original.push_back(pcks.sizes()[i]);
+	sorted = original;
+	sort(sorted.begin(), sorted.end());		// ascending order (top to bottom)
+	reverse(sorted.begin(),sorted.end());	// descending order (bottom to top, the way we want)
+	if (original == sorted) {		// if true, player wins, then detach all pancake buttons
+		for (int k = 0; k < pcks.total_pancakes(); ++k)
+			detach(*pancake_buttons[k]);
+		attach(congrats_text);
+		congrats_text.set_font_size(20);
+		congrats_text.set_font(FL_TIMES_BOLD);
+		score_text.set_label("Your Score: " + to_string(score));
+		attach(score_text);
+		win = true;
+	}
 }
 
 void Game_screen::ready_show()
@@ -139,13 +169,12 @@ void Game_screen::game_show()
 	for (int i = 0; i < pcks.total_pancakes(); ++i)
 		attach(*pancake_buttons[i]);
 	quit_button.show();
+	attach(background);
 	attach(pcks);
 }
 
 void Game_screen::game_hide()
 {
-	for (int i = 0; i < pcks.total_pancakes(); ++i)
-		detach(*pancake_buttons[i]);
 	quit_button.hide();
 	detach(pcks);
 }
@@ -154,6 +183,8 @@ bool Game_screen::wait_for_button()
 {
 	show();
 	quit_pushed = false;
+	win = false;
+	lose = false;
 #if 1
 	while (!quit_pushed) Fl::wait();
 	Fl::redraw();

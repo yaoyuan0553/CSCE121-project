@@ -21,17 +21,30 @@ struct Game_screen: Graph_lib::Window{
 
 	bool wait_for_button();
 
-	bool game_win();
-	bool game_lose();
+	bool game_win() const { return win;}
+	bool game_lose() const { return lose;}
+	bool game_quit() const { return quit_pushed;}
+	int player_score() const { return score;}
+	string player_name()  { return name_box.get_string();}
 
 private:
+						
+	//---------------------------------------------------------------------------
+	// for win screen
+	int steps;		//number of steps for the player to complete the game
+	int score;		//player's final score
+	Text congrats_text;
+	Text score_text;
 	//---------------------------------------------------------------------------
 	// for game screen
 	PancakeStack pcks;
 	PancakeStack::Difficulty difficulty_level;
 
+	Image background;
+
 	bool quit_pushed;		// default false, true if pushed
-	bool win;				//true if won, false if lost
+	bool win;				// false as default, true if won
+	bool lose;				// false as default, true if lost
 		
 	Button quit_button;
 	vector<Button*> pancake_buttons;	// store pancake seletors
@@ -55,9 +68,10 @@ private:
 	void set_difficulty(PancakeStack::Difficulty dd);		//control inversion of difficulty selector buttons
 	void go_pressed() { ready_hide(); game_show();}	// control inversion of go_button
 
-	void quit_pressed() { hide(); }
+	void quit_pressed() { hide(); quit_pushed = true; }
 	void button_pressed(int i);		// actions for pancakes flip buttons
-		
+	void win_check();		// check if the player has won
+
 	void ready_show();		//show ready screen
 	void ready_hide();		//hide ready screen
 	void game_show();		//show game screen

@@ -45,6 +45,7 @@ namespace Graph_lib
 		int n;					//number of pancakes (difficulty)
 		void get_size();		//assign w a size value
 		void stack_pancake();
+		bool is_sorted();		//checks if a stack is already a "perfect" stack before game starts, if true, re-shuffle until false
 	};
 }
 

@@ -1,5 +1,7 @@
 
+
 #include "Base_screen.h"
+
 
 
 using namespace Graph_lib;
@@ -8,28 +10,21 @@ using namespace Graph_lib;
 Base_screen::Base_screen(Point xy, int w, int h, const string& title):
 	Window(xy, w, h, title),
 	//pcks(Point(w/2,h-50)),
-	background(Point(0,0),"Nothing.jpg"),
-	back_button(Point(x_max()-80,y_max()-30),70,20,"Back",
+	back_button(Point(555,455),100,25,"Back",
 	[](Address, Address pw) { reference_to<Base_screen>(pw).back_pressed();}),
-	start_button(Point(x_max()/2-50,y_max()/5+20),100,20,"New Game",
+	start_button(Point(275,125),165,45,"New Game",
 	[](Address, Address pw) {reference_to<Base_screen>(pw).start_pressed();}),
-	help_button(Point(x_max()/2-50,y_max()*2/5+20),100,20,"Help",
-	[](Address, Address pw) {reference_to<Base_screen>(pw).help_pressed();}),
-	credits_button(Point(x_max()/2-50,y_max()*3/5+20),100,20,"Credits",
-	[](Address, Address pw) {reference_to<Base_screen>(pw).credits_pressed();}),
-	exit_button(Point(x_max()/2-50,y_max()*4/5+20),100,20,"Exit",
+	hc_button(Point(275,225),165,45,"Credits/Help",
+	[](Address, Address pw) {reference_to<Base_screen>(pw).hc_pressed();}),
+	exit_button(Point(275,325),165,45,"Exit",
 	[](Address, Address pw) {reference_to<Base_screen>(pw).exit_pressed();}),
-	subtitle(Point(x_max()/2-50,y_max()/5),"Credits"),
-	name1(Point(x_max()/2-50,y_max()*2/5),"Gerardo Vazquez"),
-	name2(Point(x_max()/2-50,y_max()*3/5),"Will Tallent"),
-	name3(Point(x_max()/2-50,y_max()*4/5),"Yuan Yao"),
-	is_attached(false),
+	main_background(Point(0,0),"pancakepro-menu.jpg"),
+	hc_background(Point(0,0),"pancakepro-credits.jpg"),
 	start_pushed(false)
 
 {   // attach all the buttons
 	attach(start_button);
-	attach(help_button);
-	attach(credits_button);
+	attach(hc_button);
 	attach(exit_button);
 	attach(back_button);
 	// hide buttons aren't for main menu
@@ -41,39 +36,29 @@ Base_screen::Base_screen(Point xy, int w, int h, const string& title):
 void Base_screen::main_show()
 {
 	start_button.show();
-	help_button.show();
-	credits_button.show();
+	hc_button.show();
 	exit_button.show();
+	attach(main_background);
 }
 
 void Base_screen::main_hide()
 {
+	detach(main_background);
 	start_button.hide();
-	help_button.hide();
-	credits_button.hide();
+	hc_button.hide();
 	exit_button.hide();
 }
 
-void Base_screen::credits_show()
+void Base_screen::hc_show()
 {
 	back_button.show();
-	attach(subtitle);
-	attach(name1);
-	attach(name2);
-	attach(name3);
-	credits_attached();
+	attach(hc_background);
 }
 
 void Base_screen::other_hide()
 {
 	back_button.hide();
-	if (is_attached)
-	{
-		detach(name1);
-		detach(name2);
-		detach(name3);
-		detach(subtitle);
-	}
+	detach(hc_background);
 }
 
 bool Base_screen::wait_for_button()

@@ -1,34 +1,50 @@
 
-#include "std_lib_facilities_4.h"
+
+
+#include "PancakeStack.h"
 #include "Base_screen.h"
 #include "Game_screen.h"
-#include "PancakeStack.h"
-
+#include "Splash_screen.h"
+#include "Scoreboard.h"
 
 using namespace Graph_lib;
 
 const int xmax = 700;
+const int xmid = 700/2;
 const int ymax = 500;
-const int xmid = xmax/2;
 
+void game_assembler()		//assemble all the windows together
+{
+	Splash_screen win0(Point(100,100),xmax,ymax,"Pancakepro");
+	win0.wait_for_button();
+	Base_screen win1(Point(100,100),xmax,ymax,"Main Menu");
+
+	if (win0.continue_button_pushed())
+	{
+		win1.wait_for_button();
+		if (win1.start_button_pushed())
+		{
+			win1.hide();	
+			Game_screen win2(Point(100,100),xmax,ymax,"Game");
+			win2.wait_for_button();
+			if (win2.game_quit())
+			{
+				string name = win2.player_name();
+				Scoreboard win3(Point(100,100),xmax,ymax, Record(name,200));
+				win3.wait_for_button();
+				if (win3.quit_button_pushed())
+				{
+					game_assembler();		//recursion, go back to splash screen
+				}
+			}
+		}
+	}
+}
 
 int main()
 try{
 	srand(time(0));
-	Base_screen win1(Point(100,100),700,500,"test1");
-	win1.subtitle.set_font(FL_TIMES_BOLD);
-	win1.subtitle.set_font_size(20);
-	const int xmid = 700/2;
-	const int ymax = 500;
-	//PancakeStack pck(Point(xmid,ymax-50));
-	//win1.attach(pck);
-	win1.wait_for_button();
-	Game_screen win2(Point(100,100),700,500,"test2");
-	if (win1.start_button_pushed())
-	{
-		win1.hide();
-		win2.wait_for_button();
-	}
+	game_assembler();
 
 }
 catch(exception& e){
