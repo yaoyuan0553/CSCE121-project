@@ -13,4 +13,9 @@
 //	to be used in the scoring function, and to determine when to stop the game
 //	for too many flips.
 
+#ifndef FIND_SOLUTION_GUARD
+#define FIND_SOLUTION_GUARD 1
+
 vector<int> *find_solution(const vector<int>& pancakes);
+
+#endif

@@ -34,6 +34,10 @@ private:
 	int steps;		//number of steps for the player to complete the game
 	int score;		//player's final score
 	Text congrats_text;
+	Text gameover_text;
+
+	Text final_score_text;
+	Text step_text;
 	Text score_text;
 	//---------------------------------------------------------------------------
 	// for game screen
@@ -71,6 +75,7 @@ private:
 	void quit_pressed() { hide(); quit_pushed = true; }
 	void button_pressed(int i);		// actions for pancakes flip buttons
 	void win_check();		// check if the player has won
+	void score_calc();		// calculate player's final score
 
 	void ready_show();		//show ready screen
 	void ready_hide();		//hide ready screen

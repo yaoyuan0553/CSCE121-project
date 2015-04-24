@@ -8,7 +8,7 @@
 #include "Graph.h"
 #include "Pancake.h"
 #include "std_lib_facilities_4.h"
-
+#include "find_solution.h"
 
 namespace Graph_lib
 {
@@ -36,7 +36,10 @@ namespace Graph_lib
 		void flip(int pn);		// flip according to pancake numbers
 
 		vector<int> sizes() const {return s;}
+		vector<int> fixed_sizes() const;		//for find_solution
 		int total_pancakes() const {return n;}
+
+		int min_flip();		// minimum moves to complete a pancake game
 
 	private:
 		Point c;				//center of the first pancake (bottom one)

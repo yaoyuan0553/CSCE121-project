@@ -22,15 +22,10 @@ namespace Graph_lib
 	void PancakeStack::get_size()
 	{
 		s.clear();		//clear sizes to ensure it's empty everytime it's called
-		vector<int> nums;
 		for (int i = 1; i <= 9; ++i)
-			nums.push_back(i);
+			s.push_back(i);
 		//make the random number different every time rand() is called
-		random_shuffle(nums.begin(), nums.end());
-		for (int i = 0; i < nums.size(); ++i)
-		{
-			s.push_back(nums[i]);				//s is sizes
-		}
+		random_shuffle(s.begin(), s.end());
 		if (is_sorted())
 			get_size();
 	}
@@ -79,5 +74,23 @@ namespace Graph_lib
 		reverse(p.begin()+pn, p.begin()+p.size());
 		// reverse the order of pointers so it can still be drawn from bottom to top
 		reverse(s.begin()+pn, s.begin()+p.size());	//reverse size vector as well for later use
+	}
+
+	vector<int> PancakeStack::fixed_sizes() const		// for find_solution
+	{
+		vector<int> temp(s.begin(),s.begin()+n);
+		vector<int> result(n);
+		for (int i = 1; i <= n; ++i) {
+			auto it = max_element(temp.begin(),temp.end());		//iterator of the maximum element
+			int pos = distance(temp.begin(),it);		//index of the maximum element
+			result[pos] = i;
+			*it = 0;					//make the last maximum value 0 thus excluding it from the next max_element
+		}
+		return result;
+	}
+
+	int PancakeStack::min_flip()		// the minimum flips needed to beat the game
+	{
+		return find_solution(fixed_sizes())->size();
 	}
 }
