@@ -38,6 +38,13 @@ Game_screen::Game_screen(Point xy, int w, int h, const string& title):
 	game_hide();		// show ready screen contents first
 }
 
+Game_screen::~Game_screen()
+{
+	for (int i=0; i < pancake_buttons.size(); ++i) {
+		delete pancake_buttons[i];
+	}
+}
+
 void Game_screen::attach_levels()
 {
 		

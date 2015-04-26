@@ -29,6 +29,8 @@ struct Scoreboard: Graph_lib::Window{
 	bool wait_for_button();
 	bool quit_button_pushed() { return quit_bool;}
 
+	~Scoreboard();		// destructor, deallocate memory for all Text objects.
+
 private:
 	vector<Text*> text_names;		// names stored in Text
 	vector<Text*> text_scores;		// scores stored in Text

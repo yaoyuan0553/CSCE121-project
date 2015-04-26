@@ -22,6 +22,14 @@ Scoreboard::Scoreboard(Point xy, int w, int h, const Record& rr):
 	attach(quit_button);
 }
 
+Scoreboard::~Scoreboard()
+{
+	for (int i=0; i < text_names.size(); ++i)
+		delete text_names[i];
+	for (int j=0; j < text_scores.size(); ++j)
+		delete text_scores[j];
+}
+
 void Scoreboard::new_records()
 // called by text_records()
 {

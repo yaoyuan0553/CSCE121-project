@@ -18,6 +18,7 @@ using namespace Graph_lib;
 struct Game_screen: Graph_lib::Window{
 
 	Game_screen(Point xy, int w, int h, const string& title);
+	~Game_screen();		// deletes all pancake flipping buttons after out of scope
 
 	bool wait_for_button();
 
