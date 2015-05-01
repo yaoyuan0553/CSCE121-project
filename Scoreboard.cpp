@@ -39,7 +39,7 @@ void Scoreboard::new_records()
 		if (r > rcds[i])			// r is the new record awaiting for qualification checking
 			q = true;
 	}
-	if (q = true) {
+	if (q == true) {
 		rcds[0] = r;				// drop the lowest score
 		ofstream ofs("Scoreboard.txt");
 		ofs << rcds[0] << rcds[1] << rcds[2] <<			// save the new data
