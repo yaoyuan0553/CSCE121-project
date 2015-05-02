@@ -3,6 +3,7 @@
 
 #include "PancakeStack.h"
 #include "Base_screen.h"
+#include "Ready_screen.h"
 #include "Game_screen.h"
 #include "Splash_screen.h"
 #include "Scoreboard.h"
@@ -25,31 +26,28 @@ void game_assembler()		//assemble all the windows together
 		win1.wait_for_button();
 		if (win1.start_button_pushed())
 		{
-			win1.hide();	
-			Game_screen win2(Point(100,100),xmax,ymax,"Game");
-			win2.wait_for_button();
-			if (win2.game_quit())
+			win1.hide();
+			Ready_screen winr(Point(100,100),xmax,ymax,"Ready");
+			winr.wait_for_button();
+			if (winr.go_pushed())
 			{
-				string name = win2.player_name();
-				int score = win2.player_score();
-				Scoreboard win3(Point(100,100),xmax,ymax, Record(name,score));
-				win3.wait_for_button();
-				if (win3.quit_button_pushed())
+				PancakeStack::Difficulty d = winr.difficulty_level();
+				string name = winr.player_name();
+				Game_screen win2(Point(100,100),xmax,ymax,"Game",d);
+				win2.wait_for_button();
+				if (win2.game_quit())
 				{
-					game_assembler();		//recursion, go back to splash screen
+					int score = win2.player_score();
+					Scoreboard win3(Point(100,100),xmax,ymax, Record(name,score));
+					win3.wait_for_button();
+					if (win3.quit_button_pushed())
+					{
+						game_assembler();		//recursion, go back to splash screen
+					}
 				}
 			}
 		}
 	}
-}
-
-void print_vector(const vector<int>& v)
-{
-	for (int i = 0; i < v.size(); ++i)
-	{
-		cout << ' ' << v[i] << endl;
-	}
-	cout << "----------------------------------------------------\n";
 }
 
 int main()

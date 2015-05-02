@@ -4,38 +4,32 @@
 
 using namespace Graph_lib;
 
-Game_screen::Game_screen(Point xy, int w, int h, const string& title):
+Game_screen::Game_screen(Point xy, int w, int h, const string& title, PancakeStack::Difficulty dd):
 	Window(xy, w, h, title), pcks(Point(x_max()/2,y_max()-100)),
-	quit_button(Point(x_max()-80,y_max()-30),70,20,"Quit",
+	quit_button(Point(0,0),x_max(),y_max()," ",
 	[](Address, Address pw) { reference_to<Game_screen>(pw).quit_pressed();}),
-	go_button(Point(x_max()/2-75,y_max()*4/5),150,50,"Go!",
-	[](Address, Address pw) {reference_to<Game_screen>(pw).go_pressed();}),
-	name_box(Point(x_max()/2-100,y_max()/5),200,100,"Please enter your name:"),
-	difficulty_out(Point(x_max()/2-100,y_max()*2/5),100,50, "Difficulty level:"),
-	level_menu1(Point(50,y_max()*3/5),150,20,Menu::horizontal,"Difficulty Levels"),
-	level_menu2(Point(50,y_max()*3/5+20),150,20,Menu::horizontal, "Difficulty Levels"),
 	steps(0),
 	score(0),
 	win(false),
 	lose(false),
-	difficulty_level(PancakeStack::Difficulty::medium),		//default difficulty level
-	congrats_text(Point(270, y_max()/5),"Congratulations, You Win!"),
-	gameover_text(Point(300,y_max()/5),"Game Over"),
+	difficulty_level(dd),		
+	congrats_text(Point(220, 100),"Congratulations, You Win!"),
+	gameover_text(Point(270,100),"Game Over"),
 	final_score_text(Point(280,y_max()/5+30), "Your final score: "+ to_string(score)),
 	score_text(Point(550,75), "Current Score: "+ to_string(100*difficulty_level)),
 	step_text(Point(50,75),"Steps: 0"),
+	continue_text(Point(245,460),"Press anywhere to continue"),
+	min_move_text(Point(230,150),"This could be done in: "),
 	background(Point(0,0),"pancakepro-pan.jpg")
 {
 	step_text.set_font(FL_TIMES_BOLD);
 	step_text.set_font_size(25);
 	pcks.set_difficulty(difficulty_level);
-	attach(pcks);
-	attach(quit_button);
-	attach(go_button);
-	attach(name_box);
-	attach(difficulty_out);
-	attach_levels();		//create and attach level_menu1/2 's buttons
-	game_hide();		// show ready screen contents first
+	game_show();		// show all objects on game screen
+	sorted_pcks();		// calculate the sorted vector of pancakes
+	continue_text.set_font_size(20);	continue_text.set_font(FL_TIMES_BOLD);
+	continue_text.set_color(Color::white);
+	min_moves = pcks.min_flip();
 }
 
 Game_screen::~Game_screen()
@@ -43,29 +37,6 @@ Game_screen::~Game_screen()
 	for (int i=0; i < pancake_buttons.size(); ++i) {
 		delete pancake_buttons[i];
 	}
-}
-
-void Game_screen::attach_levels()
-{
-		
-	level_menu1.attach(new Button(Point(0,0),0,0,"noob(2)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::noob);}));
-	level_menu1.attach(new Button(Point(0,0),0,0,"easy(3)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::easy);}));
-	level_menu1.attach(new Button(Point(0,0),0,0,"medium(4)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::medium);}));
-	level_menu1.attach(new Button(Point(0,0),0,0,"hard(5)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::hard);}));
-	level_menu2.attach(new Button(Point(0,0),0,0,"advanced(6)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::advanced);}));
-	level_menu2.attach(new Button(Point(0,0),0,0,"expert(7)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::expert);}));
-	level_menu2.attach(new Button(Point(0,0),0,0,"extreme(8)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::extreme);}));
-	level_menu2.attach(new Button(Point(0,0),0,0,"Chuck Norris(9)",
-		[](Address, Address pw){reference_to<Game_screen>(pw).set_difficulty(PancakeStack::Difficulty::chuck_norris);}));
-	attach(level_menu1);
-	attach(level_menu2);
 }
 
 void Game_screen::get_buttons()
@@ -90,14 +61,6 @@ void Game_screen::get_buttons()
 			pcks.sizes()[8]*25*2,10+pcks.sizes()[8]," ", cb_pancake8));
 }
 
-void Game_screen::set_difficulty(PancakeStack::Difficulty d)
-{
-	difficulty_level = d;
-	pcks.set_difficulty(difficulty_level);
-	stringstream ss;
-	ss << d;
-	difficulty_out.put(ss.str());
-}
 	
 void Game_screen::button_pressed(int i)
 // actions when pancake flip buttons are pressed
@@ -119,61 +82,55 @@ void Game_screen::button_pressed(int i)
 	score_text.set_label("Current Score: " + to_string(score));
 	redraw();
 	win_check();	//check for win every time buttons are pressed
+	if (win || lose) {
+		attach(quit_button);
+		final_score_text.set_label("Your Score: " + to_string(score));
+		min_move_text.set_label("This could be done in " + to_string(min_moves) + " steps");
+		min_move_text.set_font_size(20);	min_move_text.set_font(FL_TIMES_BOLD);
+		attach(final_score_text); attach(continue_text); attach(min_move_text);
+	}
 }
 
-void Game_screen::win_check()
+void Game_screen::sorted_pcks()
 {
 	vector<int> original;	//store the original sizes() vector
-	vector<int> sorted;		//store sizes in another vector avoiding direct changes to sizes()
 	for (int i = 0; i < pcks.total_pancakes(); ++i)
 		original.push_back(pcks.sizes()[i]);
 	sorted = original;
 	sort(sorted.begin(), sorted.end());		// ascending order (top to bottom)
 	reverse(sorted.begin(),sorted.end());	// descending order (bottom to top, the way we want)
-	if (original == sorted) {		// if true, player wins, then detach all pancake buttons
+}
+
+void Game_screen::win_check()
+{
+	vector<int> original;	//store the original sizes() vector
+	for (int i = 0; i < pcks.total_pancakes(); ++i) {
+		original.push_back(pcks.sizes()[i]);
+	}
+	if (original == sorted && score >= 0) {		// if true, player wins, then detach all pancake buttons
 		for (int k = 0; k < pcks.total_pancakes(); ++k)
 			detach(*pancake_buttons[k]);
-		if (score >= 0) {
-			win = true;
-			attach(congrats_text);
-			congrats_text.set_font_size(20);
-			congrats_text.set_font(FL_TIMES_BOLD);
-		}
-		else if (score < 0) {
-			lose = true;
-			attach(gameover_text);
-			gameover_text.set_font_size(20);
-			gameover_text.set_font(FL_TIMES_BOLD);
-		}
-		final_score_text.set_label("Your Score: " + to_string(score));
-		attach(final_score_text);
+		win = true;
+		attach(congrats_text);
+		congrats_text.set_font_size(20);
+		congrats_text.set_font(FL_TIMES_BOLD);
+	}
+	else if (score < 0) {			// player loses when their score is below 0. detach all pancake buttons
+		for (int k = 0; k < pcks.total_pancakes(); ++k)
+			detach(*pancake_buttons[k]);
+		lose = true;
+		attach(gameover_text);
+		gameover_text.set_font_size(20);
+		gameover_text.set_font(FL_TIMES_BOLD);
 	}
 }
 
 void Game_screen::score_calc()
 {
-	if (steps <= pcks.min_flip())
+	if (steps <= min_moves)
 		score = 100*difficulty_level;
-	else if (steps > pcks.min_flip())
-		score = (100-10*(steps-pcks.min_flip()))*difficulty_level;
-}
-
-void Game_screen::ready_show()
-{
-	go_button.show();
-	difficulty_out.show();
-	name_box.show();
-	level_menu1.show();
-	level_menu2.show();
-}
-
-void Game_screen::ready_hide()
-{
-	go_button.hide();
-	difficulty_out.hide();
-	name_box.hide();
-	level_menu1.hide();
-	level_menu2.hide();
+	else if (steps > min_moves)
+		score = (100-10*(steps-min_moves))*difficulty_level;
 }
 
 void Game_screen::game_show()
@@ -182,17 +139,10 @@ void Game_screen::game_show()
 	score_text.set_label("Current Score: "+ to_string(100*difficulty_level));
 	for (int i = 0; i < pcks.total_pancakes(); ++i)
 		attach(*pancake_buttons[i]);
-	quit_button.show();
 	attach(background);
 	attach(step_text);
 	attach(score_text);
 	attach(pcks);
-}
-
-void Game_screen::game_hide()
-{
-	quit_button.hide();
-	detach(pcks);
 }
 
 bool Game_screen::wait_for_button()

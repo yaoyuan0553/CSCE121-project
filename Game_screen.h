@@ -17,7 +17,7 @@ using namespace Graph_lib;
 
 struct Game_screen: Graph_lib::Window{
 
-	Game_screen(Point xy, int w, int h, const string& title);
+	Game_screen(Point xy, int w, int h, const string& title, PancakeStack::Difficulty dd);
 	~Game_screen();		// deletes all pancake flipping buttons after out of scope
 
 	bool wait_for_button();
@@ -26,20 +26,25 @@ struct Game_screen: Graph_lib::Window{
 	bool game_lose() const { return lose;}
 	bool game_quit() const { return quit_pushed;}
 	int player_score() const { return score;}
-	string player_name()  { return name_box.get_string();}
 
 private:
 						
 	//---------------------------------------------------------------------------
 	// for win screen
+	vector<int> sorted;
+
 	int steps;		//number of steps for the player to complete the game
 	int score;		//player's final score
+	int min_moves;
+
 	Text congrats_text;
 	Text gameover_text;
 
 	Text final_score_text;
 	Text step_text;
 	Text score_text;
+	Text continue_text;
+	Text min_move_text;
 	//---------------------------------------------------------------------------
 	// for game screen
 	PancakeStack pcks;
@@ -54,35 +59,23 @@ private:
 	Button quit_button;
 	vector<Button*> pancake_buttons;	// store pancake seletors
 
-	//----------------------------------------------------------------------------
-	// for ready screen
-	In_box name_box;
-	Out_box difficulty_out;		//display current difficulty level
-	Button go_button;
-		
-	Menu level_menu1;		//first row
-	Menu level_menu2;		//second row
 
 	//----------------------------------------------------------------------------
-	void attach_levels();	//attach all levels to the screen
 	void get_buttons();		//initialize all buttons for game screen
 
 	//----------------------------------------------------------------------------
 	//control inversions
 
 	void set_difficulty(PancakeStack::Difficulty dd);		//control inversion of difficulty selector buttons
-	void go_pressed() { ready_hide(); game_show();}	// control inversion of go_button
 
 	void quit_pressed() { hide(); quit_pushed = true; }
 	void button_pressed(int i);		// actions for pancakes flip buttons
 	void win_check();		// check if the player has won
 	void score_calc();		// calculate player's final score
 
-	void ready_show();		//show ready screen
-	void ready_hide();		//hide ready screen
 	void game_show();		//show game screen
-	void game_hide();		//hide game screen
-		
+	
+	void sorted_pcks();		// order of sorted pancakes
 
 	static void cb_pancake0(Address, Address pw)
 	{ reference_to<Game_screen>(pw).button_pressed(0); }

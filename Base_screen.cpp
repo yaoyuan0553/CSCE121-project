@@ -22,31 +22,28 @@ Base_screen::Base_screen(Point xy, int w, int h, const string& title):
 	hc_background(Point(0,0),"pancakepro-credits.jpg"),
 	start_pushed(false)
 
-{   // attach all the buttons
-	attach(start_button);
-	attach(hc_button);
-	attach(exit_button);
+{   // attach hc_screen
 	attach(back_button);
+	attach(hc_background);
 	// hide buttons aren't for main menu
-	back_button.hide();
 }
 
 
 
 void Base_screen::main_show()
 {
-	start_button.show();
-	hc_button.show();
-	exit_button.show();
+	attach(start_button);
+	attach(hc_button);
+	attach(exit_button);
 	attach(main_background);
 }
 
 void Base_screen::main_hide()
 {
 	detach(main_background);
-	start_button.hide();
-	hc_button.hide();
-	exit_button.hide();
+	detach(start_button);
+	detach(hc_button);
+	detach(exit_button);
 }
 
 void Base_screen::hc_show()
@@ -63,7 +60,7 @@ void Base_screen::other_hide()
 
 bool Base_screen::wait_for_button()
 {
-	main_show();
+	show();
 	start_pushed = false;
 #if 1
 	while (!start_pushed) Fl::wait();
