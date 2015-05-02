@@ -1,5 +1,5 @@
-Mr.pro , 540
-Yao , 450
-Test , 480
-Yao , 600
-Yuan , 600
+AAA , 0
+AAA , 0
+AAA , 0
+AAA , 0
+AAA , 0
